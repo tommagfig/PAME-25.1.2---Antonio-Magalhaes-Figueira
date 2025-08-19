@@ -473,18 +473,16 @@ class Sistema {
       "indefinido",        
       "indefinido"        
     );
-  
     
+    console.log(`Reserva realizada com sucesso! ID: ${idReserva}`);
     this.reservas.push(reserva); // adiciona ao histórico de reservas do sistema
   
     if (!this.usuarioLogado.reservas) {
       this.usuarioLogado.reservas = [];
     }
   
-    
     this.usuarioLogado.reservas.push(reserva); //adiciona ao histórico do cliente
   
-    
     quarto._quantidadeDisponivel--; // atualiza disponibilidade do quarto
   
     return reserva;
@@ -548,51 +546,210 @@ class Sistema {
   }
 
   menu() {
-    console.log("\n=== Bem-vindo ao Hotel F-Luxo ===");
-    console.log("") // só pra estética
-  
-    // pergunta se é cliente ou funcionário
-    let tipo = prompt("Digite 1 se você é cliente ou 2 se você é funcionário: ");
-    if (tipo === "1") {
-      tipo = "cliente";
-    } else if (tipo === "2") {
-      tipo = "funcionario";
-    } else {
-      console.log("Opção inválida. Encerrando...");
-      return;
-    }
-    
-    console.log("") // só pra estética
-    // pergunta se quer se cadastrar ou fazer login
-    let acao = prompt("Digite 1 para Cadastro ou 2 para Login: ");
-    console.log("") // só pra estética
-  
-    if (acao === "1") {
-      // cadastro
-      if (tipo === "cliente") {
-        const nome = prompt("Nome: ");
-        const dataNascimento = prompt("Data de nascimento (dd/mm/aaaa): ");
-        const cpf = prompt("CPF: ");
-        const email = prompt("Email: ");
-        const senha = prompt("Senha: ");
-        this.fazerCadastro("cliente", { nome, dataNascimento, cpf, email, senha });
+    // Loop do menu inicial: permite voltar aqui ao "sair da conta"
+    let executando = true;
+
+    while (executando) {
+      console.log("\n=== Bem-vindo ao Hotel F-Luxo ===\n");
+
+      // pergunta se é cliente ou funcionário
+      let tipo = prompt("Digite 1 se você é cliente ou 2 se você é funcionário: ");
+      if (tipo === "1") {
+        tipo = "cliente";
+      } else if (tipo === "2") {
+        tipo = "funcionario";
       } else {
-        const nome = prompt("Nome: ");
-        const cpf = prompt("CPF: ");
+        console.log("Opção inválida. Encerrando...");
+        return; // fecha o sistema
+      }
+
+      console.log(""); // estética
+      // pergunta se quer se cadastrar ou fazer login
+      let acao = prompt("Digite 1 para Cadastro ou 2 para Login: ");
+      console.log(""); // estética
+
+      if (acao === "1") {
+        // cadastro
+        let sucesso = false;
+        if (tipo === "cliente") {
+          const nome = prompt("Nome: ");
+          const dataNascimento = prompt("Data de nascimento (dd/mm/aaaa): ");
+          const cpf = prompt("CPF: ");
+          const email = prompt("Email: ");
+          const senha = prompt("Senha: ");
+          console.log(""); // estética
+          sucesso = this.fazerCadastro("cliente", { nome, dataNascimento, cpf, email, senha });
+        } else {
+          const nome = prompt("Nome: ");
+          const cpf = prompt("CPF: ");
+          const email = prompt("Email: ");
+          const senha = prompt("Senha: ");
+          console.log(""); // estética
+          sucesso = this.fazerCadastro("funcionario", { nome, cpf, email, senha });
+        }
+
+        // se cadastro deu certo, pede login
+        if (sucesso) {
+          console.log("\nAgora faça login:\n");
+          const email = prompt("Email: ");
+          const senha = prompt("Senha: ");
+          if (this.fazerLogin(tipo, email, senha)) {
+            const resultado = (tipo === "cliente") ? this.menuCliente() : this.menuFuncionario();
+            if (resultado === "logout") {
+              // volta para o início do while -> escolher cliente/funcionário de novo
+              continue;
+            } else if (resultado === "exit") {
+              // encerra o sistema
+              executando = false;
+            }
+          }
+          console.log("") //estética
+        }
+
+      } else if (acao === "2") {
+        // login direto
         const email = prompt("Email: ");
         const senha = prompt("Senha: ");
-        this.fazerCadastro("funcionario", { nome, cpf, email, senha });
+        if (this.fazerLogin(tipo, email, senha)) {
+          const resultado = (tipo === "cliente") ? this.menuCliente() : this.menuFuncionario();
+          if (resultado === "logout") {
+            continue; // volta ao menu inicial
+          } else if (resultado === "exit") {
+            executando = false; // encerra sistema
+          }
+        }
+
+      } else {
+        console.log("Opção inválida. Encerrando...");
+        return; // fecha o sistema
       }
-  
-    } else if (acao === "2") {
-      // login
-      const email = prompt("Email: ");
-      const senha = prompt("Senha: ");
-      this.fazerLogin(tipo, email, senha);
-    } else {
-      console.log("Opção inválida. Encerrando...");
     }
-  }  
+  }
+
+  // menu do cliente
+  menuCliente() {
+    while (true) {
+      console.log("\n=== Menu do Cliente ===\n");
+      console.log("1. Ver Meus Dados");
+      console.log("2. Ver Lista de Quartos");
+      console.log("3. Fazer Reserva");
+      console.log("4. Cancelar Reserva");
+      console.log("5. Ver Minhas Reservas");
+      console.log("0. Sair");
+      const opcao = prompt("\nEscolha uma opção: ");
+      console.log(""); // estética
+
+      switch (opcao) {
+        case "1":
+          this.verMeusDadosCliente();
+          break;
+        case "2":
+          this.verListaQuartos();
+          break;
+        case "3":
+          {
+            console.log(""); // estética
+            const idQuarto = parseInt(prompt("Digite o ID do quarto que deseja reservar: "));
+            this.criarReserva(idQuarto);
+          }
+          break;
+        case "4":
+          {
+            console.log(""); // estética
+            const idCancelar = parseInt(prompt("Digite o ID da reserva que deseja cancelar: "));
+            this.cancelarReserva(idCancelar);
+          }
+          break;
+        case "5":
+          this.verMinhasReservas();
+          break;
+        case "0":
+          console.log("\nDeseja:");
+          console.log("1. Sair da conta (voltar ao menu inicial)");
+          console.log("2. Sair do sistema\n");
+          const saidaCli = prompt("Escolha: ");
+          console.log(""); // estética
+          if (saidaCli === "1") {
+            this.sairDoPrograma();  // desloga
+            return "logout";        // volta ao menu inicial
+          } else if (saidaCli === "2") {
+            this.sairDoPrograma();  // desloga
+            return "exit";          // encerra o programa
+          } else {
+            console.log("Opção inválida.");
+          }
+          break;
+        default:
+          console.log("Opção inválida.");
+      }
+    }
+  }
+
+  // menu do funcionário
+  menuFuncionario() {
+    while (true) {
+      console.log("\n=== Menu do Funcionário ===\n");
+      console.log("1. Ver Meus Dados");
+      console.log("2. Ver Lista de Reservas");
+      console.log("3. Ver Lista de Quartos");
+      console.log("4. Ver Lista de Clientes");
+      console.log("5. Mudar Status de Reserva");
+      console.log("6. Adicionar Quarto");
+      console.log("0. Sair\n");
+      const opcao = prompt("Escolha uma opção: ");
+      console.log(""); // estética
+
+      switch (opcao) {
+        case "1":
+          this.verMeusDadosFuncionario();
+          break;
+        case "2":
+          this.verListaReservas();
+          break;
+        case "3":
+          this.verListaQuartos();
+          break;
+        case "4":
+          this.verListaClientes();
+          break;
+        case "5":
+          {
+            const idReserva = parseInt(prompt("Digite o ID da reserva: "));
+            const novoStatus = prompt("Digite o novo status (pendente, adiada, realizada, cancelada): ");
+            this.mudarStatusReserva(idReserva, novoStatus);
+          }
+          break;
+        case "6":
+          {
+            const nome = prompt("Nome do quarto: ");
+            const descricao = prompt("Descrição: ");
+            const quantidadeCamas = parseInt(prompt("Quantidade de camas: "));
+            const precoPorNoite = prompt("Preço por noite: ");
+            const quantidadeDisponivel = parseInt(prompt("Quantidade disponível: "));
+            this.adicionarQuarto({ nome, descricao, quantidadeCamas, precoPorNoite, quantidadeDisponivel });
+          }
+          break;
+        case "0":
+          console.log("\nDeseja:");
+          console.log("1. Sair da conta (voltar ao menu inicial)");
+          console.log("2. Sair do sistema\n");
+          const saidaFunc = prompt("Escolha: ");
+          console.log("") // estética
+          if (saidaFunc === "1") {
+            this.sairDoPrograma();  // desloga
+            return "logout";        // volta ao menu inicial
+          } else if (saidaFunc === "2") {
+            this.sairDoPrograma();  // desloga
+            return "exit";          // encerra o programa
+          } else {
+            console.log("Opção inválida.");
+          }
+          break;
+        default:
+          console.log("Opção inválida.");
+      }
+    }
+  }    
 }
 
 const sistema = new Sistema()
