@@ -546,4 +546,55 @@ class Sistema {
 
     return true;
   }
+
+  menu() {
+    console.log("\n=== Bem-vindo ao Hotel F-Luxo ===");
+    console.log("") // só pra estética
+  
+    // pergunta se é cliente ou funcionário
+    let tipo = prompt("Digite 1 se você é cliente ou 2 se você é funcionário: ");
+    if (tipo === "1") {
+      tipo = "cliente";
+    } else if (tipo === "2") {
+      tipo = "funcionario";
+    } else {
+      console.log("Opção inválida. Encerrando...");
+      return;
+    }
+    
+    console.log("") // só pra estética
+    // pergunta se quer se cadastrar ou fazer login
+    let acao = prompt("Digite 1 para Cadastro ou 2 para Login: ");
+    console.log("") // só pra estética
+  
+    if (acao === "1") {
+      // cadastro
+      if (tipo === "cliente") {
+        const nome = prompt("Nome: ");
+        const dataNascimento = prompt("Data de nascimento (dd/mm/aaaa): ");
+        const cpf = prompt("CPF: ");
+        const email = prompt("Email: ");
+        const senha = prompt("Senha: ");
+        this.fazerCadastro("cliente", { nome, dataNascimento, cpf, email, senha });
+      } else {
+        const nome = prompt("Nome: ");
+        const cpf = prompt("CPF: ");
+        const email = prompt("Email: ");
+        const senha = prompt("Senha: ");
+        this.fazerCadastro("funcionario", { nome, cpf, email, senha });
+      }
+  
+    } else if (acao === "2") {
+      // login
+      const email = prompt("Email: ");
+      const senha = prompt("Senha: ");
+      this.fazerLogin(tipo, email, senha);
+    } else {
+      console.log("Opção inválida. Encerrando...");
+    }
+  }  
 }
+
+const sistema = new Sistema()
+
+sistema.menu()
