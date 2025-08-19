@@ -9,7 +9,7 @@ class Reserva {
       this._checkOut = checkOut;
     }
   
-    // GETTERS (ler valores)
+    // getters
     get id() {
       return this._id;
     }
@@ -30,7 +30,7 @@ class Reserva {
       return this._checkOut;
     }
   
-    // SETTERS (alterar valores permitidos)
+    // setters
     set status(novoStatus) {
       this._status = novoStatus;
     }
@@ -44,7 +44,6 @@ class Reserva {
     }
 }
 
-
 class Funcionario {
     constructor(id, nome, cpf, email, senha) {
       this._id = id;
@@ -54,12 +53,12 @@ class Funcionario {
       this._senha = senha;
     }
   
-    // apenas get para id
+    // só get para id
     get id() {
       return this._id;
     }
   
-    // get e set para nomeUsuario
+    // get e set pro nome
     get nome() {
       return this._nome;
     }
@@ -67,7 +66,7 @@ class Funcionario {
       this._nome = novoNome;
     }
   
-    // get e set para cpf
+    // get e set pro cpf
     get cpf() {
       return this._cpf;
     }
@@ -75,7 +74,7 @@ class Funcionario {
       this._cpf = novoCpf;
     }
   
-    // get e set para email
+    // get e set pro email
     get email() {
       return this._email;
     }
@@ -83,7 +82,7 @@ class Funcionario {
       this._email = novoEmail;
     }
   
-    // get e set para senha
+    // get e set pra senha
     get senha() {
       return this._senha;
     }
@@ -94,20 +93,22 @@ class Funcionario {
 
 class Cliente {
   constructor(id, nome, dataNascimento, cpf, email, senha) {
-    this._id = id; // ID único (só get)
+    this._id = id;
     this._nome = nome;
     this._dataNascimento = dataNascimento;
     this._cpf = cpf;
     this._email = email;
     this._senha = senha;
+
+    this.reservas = [];
   }
 
-  // Apenas get para ID
+  // get para id
   get id() {
     return this._id;
   }
 
-  // Getters e Setters para os outros atributos
+  // gets e sets
   get nome() {
     return this._nome;
   }
@@ -160,7 +161,7 @@ class Quartos {
     this._quantidadeDisponivel = quantidadeDisponivel;
   }
 
-  // Métodos get
+  // gets
   get id() {
     return this._id;
   }
@@ -185,7 +186,7 @@ class Quartos {
     return this._quantidadeDisponivel;
   }
 
-  // Métodos set
+  // sets
   set nome(novoNome) {
     this._nome = novoNome;
   }
@@ -207,10 +208,6 @@ class Quartos {
   }
 }
 
-// Supondo que as classes Cliente e Funcionario já estejam definidas/importadas
-// class Cliente { constructor(id, nome, dataNascimento, cpf, email, senha) { ... } }
-// class Funcionario { constructor(id, nomeUsuario, cpf, email, senha) { ... } }
-
 class Sistema {
   constructor() {
     this.clientes = [];
@@ -223,6 +220,7 @@ class Sistema {
     this._proximoIdCliente = 1;
     this._proximoIdFuncionario = 1;
     this._proximoIdQuarto = 1;
+    this._contadorReservas = 1;
   }
 
   fazerLogin(tipoUsuario, email, senha) {
@@ -245,7 +243,6 @@ class Sistema {
     }
   }
 
-  // >>> RECOMENDADO: passar os dados como objeto (fica claro o que cada tipo exige)
   // Cliente:  { nome, dataNascimento, cpf, email, senha }
   // Func.:    { nome, cpf, email, senha }
   fazerCadastro(tipoUsuario, dados) {
@@ -269,7 +266,7 @@ class Sistema {
         return false;
       }
 
-      // cria instância com ID gerado
+      // cria um objeto com ID gerado
       const novo = new Cliente(this._proximoIdCliente++, nome, dataNascimento, cpf, email, senha);
       lista.push(novo);
       console.log(`Cliente cadastrado com sucesso! ID: ${novo.id}`);
@@ -303,28 +300,27 @@ class Sistema {
     }
   }
 
+  //deslogar
   sairDoPrograma() {
     if (this.usuarioLogado) {
       console.log(`Usuário ${this.usuarioLogado.nome} saiu do sistema.`);
       this.usuarioLogado = null;
       return true;
     } else {
-      console.log("Nenhum usuário está logado no momento.");
+      console.log("Nenhum usuário está logado no momento."); //se não tem ninguém logado
       return false;
     }
   }
   
-  verMeusDados() {
-    if (this.usuarioLogado instanceof Funcionario) {
+  verMeusDadosFuncionario() {
+    if (this.usuarioLogado instanceof Funcionario) { //confere se é funcionário
       console.log("=== Meus Dados (Funcionário) ===");
       console.log(`ID: ${this.usuarioLogado.id}`);
       console.log(`Nome: ${this.usuarioLogado.nome}`);
       console.log(`Email: ${this.usuarioLogado.email}`);
       console.log(`CPF: ${this.usuarioLogado.cpf}`);
-    } else if (this.usuarioLogado instanceof Cliente) {
-      console.log("Apenas funcionários podem acessar essa função.");
     } else {
-      console.log("Nenhum usuário está logado.");
+      console.log("Apenas funcionários podem acessar essa função.");
     }
   }
 
@@ -334,7 +330,7 @@ class Sistema {
       return;
     }
 
-    if (this.reservas.length === 0) {
+    if (this.reservas.length === 0) { //vê se tem alguma reserva
       console.log("Não há reservas cadastradas.");
       return;
     }
@@ -343,7 +339,7 @@ class Sistema {
     this.reservas.forEach((reserva, index) => {
       console.log(`\nReserva ${index + 1}`);
       console.log(`ID: ${reserva.id}`);
-      console.log(`Cliente: ${reserva.idCliente}`);
+      console.log(`Cliente: ${reserva.idCliente.nome}`);
       console.log(`Status: ${reserva.status}`);
       console.log(`Check-in: ${reserva.checkIn}`);
       console.log(`Check-out: ${reserva.checkOut}`);
@@ -351,11 +347,6 @@ class Sistema {
   }
 
   verListaQuartos() {
-    if (!this.usuarioLogado || !(this.usuarioLogado instanceof Funcionario)) {
-      console.log("Apenas funcionários logados podem acessar a lista de quartos.");
-      return;
-    }
-  
     if (this.quartos.length === 0) {
       console.log("Não há quartos cadastrados.");
       return;
@@ -394,46 +385,40 @@ class Sistema {
   }
   
   mudarStatusReserva(idReserva, novoStatus) {
-    // 1) só funcionário logado pode
     if (!this.usuarioLogado || !(this.usuarioLogado instanceof Funcionario)) {
       console.log("Apenas funcionários logados podem mudar o status de uma reserva.");
       return false;
     }
-  
-    // 2) valida status (case-insensitive)
-    const permitidos = ["pendente", "adiada", "realizada", "cancelada"];
+    
+    const permitidos = ["pendente", "adiada", "realizada", "cancelada"];  
     const statusNormalizado = String(novoStatus || "").toLowerCase();
   
-    if (!permitidos.includes(statusNormalizado)) {
+    if (!permitidos.includes(statusNormalizado)) { // valida status
       console.log(`Status inválido. Use um destes: ${permitidos.join(", ")}.`);
       return false;
     }
   
-    // 3) localizar a reserva
     const idNum = Number(idReserva);
-    const reserva = this.reservas.find(r => Number(r.id) === idNum);
+    const reserva = this.reservas.find(r => Number(r.id) === idNum); // localiza a reserva
   
     if (!reserva) {
       console.log(`Reserva com ID ${idReserva} não encontrada.`);
       return false;
     }
   
-    // 4) atualizar
     const anterior = reserva.status;
-    reserva.status = statusNormalizado;
+    reserva.status = statusNormalizado; // atualiza o status
   
     console.log(`Status da reserva ${reserva.id} alterado de "${anterior}" para "${reserva.status}".`);
     return true;
   }
   
   adicionarQuarto(dados) {
-    // 1) Apenas funcionários logados podem
     if (!this.usuarioLogado || !(this.usuarioLogado instanceof Funcionario)) {
       console.log("Apenas funcionários logados podem adicionar quartos.");
       return false;
     }
   
-    // 2) Validar dados
     const { nome, descricao, quantidadeCamas, precoPorNoite, quantidadeDisponivel } = dados || {};
   
     if (!nome || !descricao || !quantidadeCamas || !precoPorNoite || !quantidadeDisponivel) {
@@ -441,68 +426,124 @@ class Sistema {
       return false;
     }
   
-    // 3) Gerar ID automático (ex.: próximo disponível baseado no length ou max id)
     const novo = new Quartos(this._proximoIdQuarto++, nome, descricao, quantidadeCamas, precoPorNoite, quantidadeDisponivel);
       this.quartos.push(novo);
       console.log(`Quarto cadastrado com sucesso! ID: ${novo.id}`);
       return true;
   }
+
+  verMeusDadosCliente() {
+    if (this.usuarioLogado instanceof Cliente) {
+      console.log("=== Meus Dados (Cliente) ===");
+      console.log(`ID: ${this.usuarioLogado.id}`);
+      console.log(`Nome: ${this.usuarioLogado.nome}`);
+      console.log(`Data de Nascimento: ${this.usuarioLogado.dataNascimento}`);
+      console.log(`Email: ${this.usuarioLogado.email}`);
+      console.log(`CPF: ${this.usuarioLogado.cpf}`);
+    } else {
+      console.log("Apenas clientes podem acessar essa função.");
+    }
+  }
+
+  criarReserva(idQuarto) {
+    if (!(this.usuarioLogado instanceof Cliente)) {
+      console.log("Somente clientes podem criar reservas.");
+      return false; 
+    }
+  
+    const quarto = this.quartos.find(q => q.id === idQuarto);
+  
+    if (!quarto) {
+      console.log("Quarto não encontrado.");
+      return false;
+    }
+  
+    if (quarto.quantidadeDisponivel === 0) {
+      console.log("Quarto indisponível para reserva.");
+      return false;
+    }
+  
+    
+    const idReserva = this._contadorReservas++; // gera ID único da reserva
+  
+    const reserva = new Reserva(
+      idReserva,          
+      this.usuarioLogado, 
+      "realizada",        
+      "indefinido",        
+      "indefinido"        
+    );
+  
+    
+    this.reservas.push(reserva); // adiciona ao histórico de reservas do sistema
+  
+    if (!this.usuarioLogado.reservas) {
+      this.usuarioLogado.reservas = [];
+    }
+  
+    
+    this.usuarioLogado.reservas.push(reserva); //adiciona ao histórico do cliente
+  
+    
+    quarto._quantidadeDisponivel--; // atualiza disponibilidade do quarto
+  
+    return reserva;
+  }  
+
+  cancelarReserva(idReserva) {
+    if (!(this.usuarioLogado instanceof Cliente)) {
+      console.log("Somente clientes podem cancelar reservas.");
+      return false;
+    }
+  
+    const idNum = Number(idReserva);
+  
+    
+    const reserva = this.usuarioLogado.reservas.find(r => r.id === idNum); // procura a reserva no histórico do cliente
+  
+    if (!reserva) {
+      console.log(`Reserva com ID ${idReserva} não encontrada no seu histórico.`);
+      return false;
+    }
+  
+    // só pode cancelar se não estiver já cancelada
+    if (reserva.status === "cancelada") {
+      console.log(`A reserva ${idReserva} já está cancelada.`);
+      return false;
+    }
+  
+    
+    reserva.status = "cancelada"; // atualiza status
+  
+    
+    if (reserva.quarto) {
+      reserva.quarto.quantidadeDisponivel++; // atualiza disponibilidade do quarto
+    }
+  
+    console.log(`Reserva ${idReserva} cancelada com sucesso.`);
+    return true;
+  }
+
+  verMinhasReservas() {
+    if (!(this.usuarioLogado instanceof Cliente)) {
+      console.log("Somente clientes podem visualizar suas reservas.");
+      return false;
+    }
+
+    if (!this.usuarioLogado.reservas || this.usuarioLogado.reservas.length === 0) {
+      console.log("Você não possui reservas cadastradas.");
+      return false;
+    }
+
+    console.log("\n=== Minhas Reservas ===");
+    this.usuarioLogado.reservas.forEach((reserva, index) => {
+      console.log(`\nReserva ${index + 1}`);
+      console.log(`ID: ${reserva.id}`);
+      console.log(`Status: ${reserva.status}`);
+      console.log(`Check-in: ${reserva.checkIn}`);
+      console.log(`Check-out: ${reserva.checkOut}`);
+    });
+
+    return true;
+  }
 }
-
-// ================= TESTE: adicionarQuarto + verListaQuartos =================
-
-console.log("\n=== TESTE: adicionarQuarto e verListaQuartos ===");
-
-const sistema = new Sistema();
-
-// 1) tentar adicionar quarto SEM login -> deve falhar
-console.log("\n--- 1) Tentativa sem login (deve falhar) ---");
-sistema.adicionarQuarto({
-  nome: "Suíte Master",
-  descricao: "Quarto amplo com vista para o mar",
-  quantidadeCamas: 2,
-  precoPorNoite: 450,
-  quantidadeDisponivel: 5
-});
-
-// 2) cadastrar funcionário
-console.log("\n--- 2) Cadastrando funcionário ---");
-sistema.fazerCadastro("funcionario", {
-  nome: "Carlos Pereira",
-  cpf: "33333333333",
-  email: "carlos@hotel.com",
-  senha: "1234"
-});
-
-// 3) login como funcionário
-console.log("\n--- 3) Logando como funcionário ---");
-sistema.fazerLogin("funcionario", "carlos@hotel.com", "1234");
-
-// 4) adicionar quartos (agora deve funcionar)
-console.log("\n--- 4) Adicionando quartos (deve funcionar) ---");
-sistema.adicionarQuarto({
-  nome: "Suíte Master",
-  descricao: "Quarto amplo com vista para o mar",
-  quantidadeCamas: 2,
-  precoPorNoite: 450,
-  quantidadeDisponivel: 5
-});
-
-sistema.adicionarQuarto({
-  nome: "Quarto Standard",
-  descricao: "Quarto confortável com cama de casal",
-  quantidadeCamas: 1,
-  precoPorNoite: 200,
-  quantidadeDisponivel: 10
-});
-
-// 5) listar quartos
-console.log("\n--- 5) Listando quartos cadastrados ---");
-sistema.verListaQuartos();
-
-// 6) opcional: deslogar e tentar listar (para confirmar controle de acesso)
-console.log("\n--- 6) Deslogar e tentar listar (deve bloquear) ---");
-sistema.sairDoPrograma();
-sistema.verListaQuartos();
-
-console.log("\n=== FIM DO TESTE ===\n");
